@@ -32,7 +32,7 @@ typechain-types
 #Hardhat files
 cache
 artifacts
-
+.openzeppelin
 
 node_modules
 .env
@@ -45,4 +45,4 @@ typechain-types
 cache
 artifacts
 
-.openzeppelin
+
