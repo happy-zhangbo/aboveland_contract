@@ -5,7 +5,7 @@
 // const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 const { encode, decode } = require('js-base64')
 const crypto = require('crypto');
 const Web3Utils = require('web3-utils');
@@ -17,7 +17,15 @@ describe("Base Test", function () {
   async function deployNftTokenFixture() {
     // const [ owner ] = await ethers.getSigners();
     const NFTContract = await ethers.getContractFactory("AboveAssets");
-    gameItems = await NFTContract.deploy();
+    const instance = await upgrades.deployProxy(NFTContract);
+
+    console.log(instance.address," box/proxy")
+    console.log(await upgrades.erc1967.getImplementationAddress(instance.address)," getImplementationAddress")
+    console.log(await upgrades.erc1967.getAdminAddress(instance.address), " getAdminAddress")   
+
+    gameItems = instance;
+
+
   }
 
   async function signMetadata(types, contents, owner){
@@ -49,6 +57,7 @@ describe("Base Test", function () {
     it("Deploy NFT1155 Contract", async function(){
       await loadFixture(deployNftTokenFixture);
     });
+
   
     it("Set Key", async function(){
       const [ owner ] = await ethers.getSigners();
@@ -106,6 +115,7 @@ describe("Base Test", function () {
     async function getAccount(salt){
       //获取账户Code和代理账户
       const byteCode = await factory.getBytecode();
+      
       const vaultAddress = `0x${Web3Utils.sha3(`0x${[
           'ff',
           factory.address,
@@ -161,5 +171,24 @@ describe("Base Test", function () {
       account.withdrawERC1155(gameItems.address, newTokenId, 1);
       expect(await gameItems.balanceOf(owner.address, newTokenId)).to.equal(1);
     });
+  });
+
+
+  describe("Upgrade Contract", async function(){
+    it("Deploy Upgrade Contract", async function(){
+      const [ owner ] = await ethers.getSigners();
+      const AboveAssetsV2 = await ethers.getContractFactory("AboveAssetsV2");
+      const instance = await upgrades.upgradeProxy(gameItems.address, AboveAssetsV2);
+      
+      console.log(instance.address," box/proxy")
+      console.log(await upgrades.erc1967.getImplementationAddress(instance.address)," getImplementationAddress")
+      console.log(await upgrades.erc1967.getAdminAddress(instance.address), " getAdminAddress")
+
+      gameItems = instance;
+      await gameItems.store(45);
+      expect(await gameItems.retrieve()).to.equal(45);
+    });
+
+
   });
 });

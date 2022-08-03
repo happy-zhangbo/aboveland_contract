@@ -1,40 +1,44 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
-import "hardhat/console.sol";
-
-contract AboveAssets is ERC1155, AccessControl, Ownable {
+contract AboveAssets is ERC1155Upgradeable, AccessControlUpgradeable, OwnableUpgradeable {
     bytes32 public constant URI_SETTER_ROLE = keccak256("URI_SETTER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    constructor() ERC1155("data:application/json;base64,") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(URI_SETTER_ROLE, msg.sender);
-        _setupRole(MINTER_ROLE, msg.sender);
-
-        _setBaseURI("data:application/json;base64,");
-    }
-
-    string signPrefix = "\x19Ethereum Signed Message:\n32";
+    string signPrefix;
     
-    string public name = "Above Assets";
+    string public name;
 
     address private _signer;
     
     // Optional base URI
-    string private _baseURI = "";
+    string private _baseURI;
 
     // Optional mapping for token URIs
     mapping(uint256 => string) private _tokenURIs;
 
     mapping(uint256 => uint256) private _totalSupply;
 
-    uint256 public _tokenId = 0;
+    uint256 public _tokenId;
+
+    function initialize() public initializer {
+        __ERC1155_init("data:application/json;base64,");
+        __Ownable_init();
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(URI_SETTER_ROLE, msg.sender);
+        _setupRole(MINTER_ROLE, msg.sender);
+
+        _setBaseURI("data:application/json;base64,");
+
+        signPrefix = "\x19Ethereum Signed Message:\n32";
+        name = "Above Assets";
+        _tokenId = 0;
+    }
 
     function mintNft(address to,string memory metadata, bytes memory signature)public {
         bytes32 msgHash = keccak256(abi.encodePacked(signPrefix, keccak256(abi.encodePacked(metadata, to))));
@@ -59,7 +63,7 @@ contract AboveAssets is ERC1155, AccessControl, Ownable {
     }
 
     function _validSignature(bytes memory signature, bytes32 msgHash) private pure returns (address) {
-        return ECDSA.recover(msgHash, signature);
+        return ECDSAUpgradeable.recover(msgHash, signature);
     }
     
     function setKey(address signer) external onlyOwner {
@@ -127,7 +131,7 @@ contract AboveAssets is ERC1155, AccessControl, Ownable {
         }
     }
 
-    function supportsInterface(bytes4 interfaceId)public view override(ERC1155, AccessControl)returns (bool){
+    function supportsInterface(bytes4 interfaceId)public view override(ERC1155Upgradeable, AccessControlUpgradeable)returns (bool){
         return super.supportsInterface(interfaceId);
     }
 }
