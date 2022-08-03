@@ -176,7 +176,6 @@ describe("Base Test", function () {
 
   describe("Upgrade Contract", async function(){
     it("Deploy Upgrade Contract", async function(){
-      const [ owner ] = await ethers.getSigners();
       const AboveAssetsV2 = await ethers.getContractFactory("AboveAssetsV2");
       const instance = await upgrades.upgradeProxy(gameItems.address, AboveAssetsV2);
       
@@ -189,6 +188,20 @@ describe("Base Test", function () {
       expect(await gameItems.retrieve()).to.equal(45);
     });
 
-
+    it("Mint Upgrade Contract", async function(){
+      const [ owner ] = await ethers.getSigners();
+      var data = await getMsgData(4010);
+      const sign = await signMetadata(["string", "address"], [data, owner.address], owner);
+      
+      const tx = await gameItems.mintNft(owner.address, data, sign);
+      const receipt = await tx.wait()
+      let upgradeId;
+      for (const event of receipt.events) {
+        if(event.event == "TransferSingle"){
+          upgradeId = event.args.id;
+        }
+      }
+      expect(await gameItems.balanceOf(owner.address,upgradeId)).to.equal(2);
+    })
   });
 });

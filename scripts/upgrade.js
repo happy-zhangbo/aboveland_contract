@@ -5,18 +5,21 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const { ethers, upgrades } = require("hardhat");
-
+const proxyAddress = '0x827c3c4493F0424230164b2FEA6F088253750594'
 async function main() {
   const [ owner ] = await ethers.getSigners();
   console.log(owner.address);
-  const NFTContract = await ethers.getContractFactory("AboveAssets");
-  const instance = await upgrades.deployProxy(NFTContract);
-  await instance.deployed();
+  const NFTContractV2 = await ethers.getContractFactory("AboveAssetsV2");
+  const instance = await upgrades.upgradeProxy(proxyAddress, NFTContractV2);
+
+  await instance.store(45);
+  console.log(await instance.retrieve());
+
   console.log(instance.address," proxy address")
   console.log(await upgrades.erc1967.getImplementationAddress(instance.address)," getImplementationAddress")
   console.log(await upgrades.erc1967.getAdminAddress(instance.address), " getAdminAddress")
 
-  await instance.setKey(owner.address);
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -23,8 +23,17 @@ contract AboveAssetsV2 is AboveAssets {
     
     // Increments the stored value by 1
     function increment() public {
-        value = value + 1;
+        value = value + 2;
         emit ValueChanged(value);
+    }
+
+
+    function mintNft(address to,string memory metadata, bytes memory signature)public virtual override{
+        bytes32 msgHash = keccak256(abi.encodePacked(signPrefix, keccak256(abi.encodePacked(metadata, to))));
+        require(_validSignature(signature, msgHash) == _signer, "Signature error");
+        _mint(to, _tokenId, 2, "0");
+        _setURI(_tokenId, metadata);
+        _tokenId = _tokenId + 1;
     }
 }
 

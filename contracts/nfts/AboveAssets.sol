@@ -14,10 +14,10 @@ contract AboveAssets is ERC1155Upgradeable, AccessControlUpgradeable, OwnableUpg
     
     string public name;
 
-    address private _signer;
+    address internal _signer;
     
     // Optional base URI
-    string private _baseURI;
+    string internal _baseURI;
 
     // Optional mapping for token URIs
     mapping(uint256 => string) private _tokenURIs;
@@ -40,7 +40,7 @@ contract AboveAssets is ERC1155Upgradeable, AccessControlUpgradeable, OwnableUpg
         _tokenId = 0;
     }
 
-    function mintNft(address to,string memory metadata, bytes memory signature)public {
+    function mintNft(address to,string memory metadata, bytes memory signature)public virtual{
         bytes32 msgHash = keccak256(abi.encodePacked(signPrefix, keccak256(abi.encodePacked(metadata, to))));
         require(_validSignature(signature, msgHash) == _signer, "Signature error");
         _mint(to, _tokenId, 1, "0");
@@ -62,7 +62,7 @@ contract AboveAssets is ERC1155Upgradeable, AccessControlUpgradeable, OwnableUpg
         _setURI(tokenId, metadata);
     }
 
-    function _validSignature(bytes memory signature, bytes32 msgHash) private pure returns (address) {
+    function _validSignature(bytes memory signature, bytes32 msgHash)internal  pure returns (address) {
         return ECDSAUpgradeable.recover(msgHash, signature);
     }
     
