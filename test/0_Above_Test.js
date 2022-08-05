@@ -6,7 +6,7 @@
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { encode, decode } = require('js-base64')
+const { decode } = require('js-base64');
 const crypto = require('crypto');
 const Web3Utils = require('web3-utils');
 
@@ -57,28 +57,34 @@ describe("Base Test", function () {
   
     it("Mint NFT", async function(){
       const [ owner ] = await ethers.getSigners();
-      var data = await getMsgData(4005);
-      
-      const sign = await signMetadata(["string", "address"], [data, owner.address], owner);
-      
-      const tx = await gameItems.mintNft(owner.address, data, sign);
+      // var data = await getMsgData(4005);
+      const nonce = await gameItems._nonce(owner.address);
+      const sign = await signMetadata(["address", "uint256","string", "string", "uint256"], [owner.address, 4258,"legend", "QmSsw6EcnwEiTT9c4rnAGeSENvsJMepNHmbrgi2S9bXNJr", nonce], owner);
+    
+      const tx = await gameItems.mintNft(owner.address, 4258, "legend", "QmSsw6EcnwEiTT9c4rnAGeSENvsJMepNHmbrgi2S9bXNJr", sign);
       const receipt = await tx.wait()
       for (const event of receipt.events) {
         if(event.event == "TransferSingle"){
           tokenId = event.args.id;
         }
       }
+      const uri = await gameItems.uri(tokenId);
+      console.log(uri);
+      console.log(decode(uri.split(",")[1]));
       expect(await gameItems.balanceOf(owner.address,tokenId)).to.equal(1);
     });
 
     it("Update Token URI", async function(){
       const [ owner ] = await ethers.getSigners();
-      var data = await getMsgData(4010);
-      const sign = await signMetadata(["string", "uint256"], [data, tokenId], owner);
-      await gameItems.updateURI(tokenId, data, sign);
+      // var data = await getMsgData(4010);
+      const nonce = await gameItems._nonce(owner.address);
+      const sign = await signMetadata(["uint256", "uint256", "string", "string", "uint256"], [tokenId, 4528, "legend", "QmSsw6EcnwEiTT9c4rnAGeSENvsJMepNHmbrgi2S9bXNJr", nonce], owner);
+      await gameItems.updateURI(tokenId, 4528, "legend", "QmSsw6EcnwEiTT9c4rnAGeSENvsJMepNHmbrgi2S9bXNJr", sign);
       const uri = await gameItems.uri(tokenId);
+      console.log(uri);
+      console.log(decode(uri.split(",")[1]));
       const chainMetadata = JSON.parse(decode(uri.split(",")[1]))
-      expect(chainMetadata.attributes[0].value).to.equal(4010);
+      expect(chainMetadata.level).to.equal(4528);
     });
   });
 
@@ -112,7 +118,6 @@ describe("Base Test", function () {
           salt,
           Web3Utils.sha3(byteCode)
       ].map(x => x.replace(/0x/, '')).join('')}`).slice(-40)}`.toLowerCase();
-      // console.log(vaultAddress);
       return vaultAddress;
     }
 
@@ -127,11 +132,10 @@ describe("Base Test", function () {
 
     it("Mint Nft To Proxy Account", async function(){
       const [ owner ] = await ethers.getSigners();
-      var data = await getMsgData(4005);
-      
-      const sign = await signMetadata(["string", "address"], [data, vaultAddress], owner);
-      
-      const tx = await gameItems.mintNft(vaultAddress, data, sign);
+      const nonce = await gameItems._nonce(owner.address);
+      const sign = await signMetadata(["address", "uint256","string", "string", "uint256"], [vaultAddress, 4528,"legend", "QmSsw6EcnwEiTT9c4rnAGeSENvsJMepNHmbrgi2S9bXNJr", nonce], owner);
+    
+      const tx = await gameItems.mintNft(vaultAddress, 4528, "legend", "QmSsw6EcnwEiTT9c4rnAGeSENvsJMepNHmbrgi2S9bXNJr", sign);
       const receipt = await tx.wait()
       for (const event of receipt.events) {
         if(event.event == "TransferSingle"){

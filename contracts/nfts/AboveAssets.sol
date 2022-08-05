@@ -5,10 +5,13 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
 
 import "hardhat/console.sol";
 
 contract AboveAssets is ERC1155, AccessControl, Ownable {
+    using Strings for uint256;
     bytes32 public constant URI_SETTER_ROLE = keccak256("URI_SETTER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -17,7 +20,7 @@ contract AboveAssets is ERC1155, AccessControl, Ownable {
         _setupRole(URI_SETTER_ROLE, msg.sender);
         _setupRole(MINTER_ROLE, msg.sender);
 
-        _setBaseURI("data:application/json;base64,");
+        // _setBaseURI("data:application/json;base64,");
     }
 
     string signPrefix = "\x19Ethereum Signed Message:\n32";
@@ -29,34 +32,63 @@ contract AboveAssets is ERC1155, AccessControl, Ownable {
     // Optional base URI
     string private _baseURI = "";
 
-    // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
-
     mapping(uint256 => uint256) private _totalSupply;
 
     uint256 public _tokenId = 0;
 
-    function mintNft(address to,string memory metadata, bytes memory signature)public {
-        bytes32 msgHash = keccak256(abi.encodePacked(signPrefix, keccak256(abi.encodePacked(metadata, to))));
+    struct MetaData {
+        uint256 level;
+        string quality;
+        string attrsUrl;
+    }
+
+    // Optional mapping for token URIs
+    mapping(uint256 => MetaData) private _tokenURIs;
+
+    mapping(address => uint256) public _nonce;
+
+    function mintNft(address to, uint256 level, string memory quality, string memory  attrsUrl, bytes memory signature)external {
+        bytes32 msgHash = keccak256(abi.encodePacked(signPrefix, keccak256(abi.encodePacked(to, level, quality, attrsUrl, _nonce[_msgSender()]))));
         require(_validSignature(signature, msgHash) == _signer, "Signature error");
+        MetaData storage md = _tokenURIs[_tokenId];
+        md.level = level;
+        md.quality = quality;
+        md.attrsUrl = attrsUrl;
         _mint(to, _tokenId, 1, "0");
-        _setURI(_tokenId, metadata);
         _tokenId = _tokenId + 1;
+        _nonce[_msgSender()]++;
     }
 
-    function uri(uint256 id) public view virtual override returns (string memory) {
-        string memory tokenURI = _tokenURIs[id];
-        // If token URI is set, concatenate base URI and tokenURI (via abi.encodePacked).
-        return bytes(tokenURI).length > 0 ? string(abi.encodePacked(_baseURI, tokenURI)) : super.uri(id);
+    function uri(uint256 tokenId) public view virtual override returns (string memory) {
+        require(_exists(tokenId), "Token does not exist");
+        MetaData memory md = _tokenURIs[tokenId];
+        bytes memory dataURI = abi.encodePacked(
+            '{',
+                '"tokenId": "Above Assets #', tokenId.toString(), '",',
+                '"level": ', md.level.toString(), ',',
+                '"quality": "', md.quality, '",',
+                '"attrsUrs": "ipfs://', md.attrsUrl, '"'
+            '}'
+        );
+        return string(
+            abi.encodePacked(
+                "data:application/json;base64,",
+                Base64.encode(dataURI)
+            )
+        );
     }
 
-    function updateURI(uint256 tokenId, string memory metadata, bytes memory signature) external {
+    function updateURI(uint256 tokenId, uint256 level, string memory quality, string memory attrsUrl, bytes memory signature) external {
         require(_exists(tokenId), "Token does not exist");
         require(balanceOf(_msgSender(), tokenId) > 0, "The owner of the token is wrong");
-        bytes32 msgHash = keccak256(abi.encodePacked(signPrefix, keccak256(abi.encodePacked(metadata,tokenId))));
+        bytes32 msgHash = keccak256(abi.encodePacked(signPrefix, keccak256(abi.encodePacked(tokenId, level, quality, attrsUrl, _nonce[_msgSender()]))));
         require(_validSignature(signature, msgHash) == _signer, "Signature error");
-        _setURI(tokenId, metadata);
+        _tokenURIs[tokenId].level = level;
+        _tokenURIs[tokenId].quality = quality;
+        _tokenURIs[tokenId].attrsUrl = attrsUrl;
+        _nonce[_msgSender()]++;
     }
+
 
     function _validSignature(bytes memory signature, bytes32 msgHash) private pure returns (address) {
         return ECDSA.recover(msgHash, signature);
@@ -64,21 +96,6 @@ contract AboveAssets is ERC1155, AccessControl, Ownable {
     
     function setKey(address signer) external onlyOwner {
         _signer = signer;
-    }
-
-    /**
-     * @dev Sets `tokenURI` as the tokenURI of `tokenId`.
-     */
-    function _setURI(uint256 id, string memory tokenURI) internal virtual {
-        _tokenURIs[id] = tokenURI;
-        emit URI(uri(id), id);
-    }
-
-    /**
-     * @dev Sets `baseURI` as the `_baseURI` for all tokens
-     */
-    function _setBaseURI(string memory baseURI) internal virtual {
-        _baseURI = baseURI;
     }
 
      /**

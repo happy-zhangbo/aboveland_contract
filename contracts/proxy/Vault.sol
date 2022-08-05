@@ -16,28 +16,28 @@ contract Vault is Ownable, ERC721Holder, ERC1155Holder {
   /// ------------------------
   /// -------- EVENTS --------
   /// ------------------------
-  event WithdrawERC20(address indexed token, address indexed to);
-  event WithdrawERC721(
-    address indexed token,
-    uint256 tokenId,
-    address indexed to
-  );
-  event WithdrawERC1155(
-    address indexed token,
-    uint256 tokenId,
-    uint256 amount,
-    address indexed to
-  );
-  event WithdrawBatchERC1155(
-    address indexed token,
-    uint256[] tokenIds,
-    uint256[] amounts,
-    address indexed to
-  );
+  // event WithdrawERC20(address indexed token, address indexed to);
+  // event WithdrawERC721(
+  //   address indexed token,
+  //   uint256 tokenId,
+  //   address indexed to
+  // );
+  // event WithdrawERC1155(
+  //   address indexed token,
+  //   uint256 tokenId,
+  //   uint256 amount,
+  //   address indexed to
+  // );
+  // event WithdrawBatchERC1155(
+  //   address indexed token,
+  //   uint256[] tokenIds,
+  //   uint256[] amounts,
+  //   address indexed to
+  // );
 
   function withdrawERC721(address _token, uint256 _tokenId) external onlyOwner{
     IERC721(_token).transferFrom(address(this), msg.sender, _tokenId);
-    emit WithdrawERC721(_token, _tokenId, msg.sender);
+    // emit WithdrawERC721(_token, _tokenId, msg.sender);
   }
 
   function withdrawERC1155(
@@ -52,7 +52,7 @@ contract Vault is Ownable, ERC721Holder, ERC1155Holder {
       _amount,
       "0"
     );
-    emit WithdrawERC1155(_token, _tokenId, _amount, msg.sender);
+    // emit WithdrawERC1155(_token, _tokenId, _amount, msg.sender);
   }
 
   function withdrawBatchERC1155(
@@ -67,7 +67,7 @@ contract Vault is Ownable, ERC721Holder, ERC1155Holder {
       _amounts,
       "0"
     );
-    emit WithdrawBatchERC1155(_token, _tokenIds, _amounts, msg.sender);
+    // emit WithdrawBatchERC1155(_token, _tokenIds, _amounts, msg.sender);
   }
 
   function withdrawERC20(address _token) external onlyOwner{
@@ -75,7 +75,7 @@ contract Vault is Ownable, ERC721Holder, ERC1155Holder {
       msg.sender,
       IERC20(_token).balanceOf(address(this))
     );
-    emit WithdrawERC20(_token, msg.sender);
+    // emit WithdrawERC20(_token, msg.sender);
   }
-  receive() external payable {}
+  // receive() external payable {}
 }

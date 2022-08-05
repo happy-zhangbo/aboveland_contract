@@ -14,6 +14,6 @@ module.exports = {
   gasReporter: {
     enabled: false,
     currency: 'BAK',
-    gasPrice: 8
+    gasPrice: 1
   }
 };
