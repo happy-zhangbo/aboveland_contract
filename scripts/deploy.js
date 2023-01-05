@@ -4,6 +4,7 @@
 // You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
+const fs = require('fs');
 const { ethers } = require("hardhat");
 
 async function main() {
@@ -16,6 +17,15 @@ async function main() {
   const FactoryContract = await ethers.getContractFactory("ProxyAccountFactory");
   const factory = await FactoryContract.deploy();
   console.log(`Proxy Factory: ${factory.address}`);
+
+  try {
+    const bytecode = await factory.getBytecode();
+    fs.writeFileSync('bytecode.txt', bytecode);
+    //文件写入成功。
+  } catch (err) {
+    console.error(err)
+  }
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

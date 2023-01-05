@@ -12,7 +12,7 @@ module.exports = {
     }
   },
   gasReporter: {
-    enabled: false,
+    enabled: true,
     currency: 'BAK',
     gasPrice: 1
   }

@@ -1,14 +1,16 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
+  <NftAndProxyAccount></NftAndProxyAccount>
   <HelloWorld msg="Welcome to Your Vue.js App"/>
 </template>
 
 <script>
+import NftAndProxyAccount from "@/components/NftAndProxyAccount.vue";
 import HelloWorld from './components/HelloWorld.vue'
 
 export default {
   name: 'App',
   components: {
+    NftAndProxyAccount,
     HelloWorld
   }
 }
