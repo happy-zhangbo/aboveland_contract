@@ -41,12 +41,6 @@ async function main() {
   // content += `VUE_APP_RESERVES_CONTRACT=${reservesWallet.address}\n`;
   console.log(`Reserves Wallet Address: ${reservesWallet.address}`);
 
-  // try {
-  //   // fs.writeFileSync('.env.local', content)
-  //   //文件写入成功。
-  // } catch (err) {
-  //   console.error(err)
-  // }
   //Set Conifg
   await goldCoin.setExchangeWallet(exchangeWallet.address);
   await goldCoin.setReservesWallet(reservesWallet.address);

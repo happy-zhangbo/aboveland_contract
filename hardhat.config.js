@@ -9,6 +9,10 @@ module.exports = {
     dev: {
       url: "https://www.blackwarrior.vip/eth",
       accounts: [PRIVATE_KEY]
+    },
+    goerli: {
+      url: "https://goerli.infura.io/v3/a2122abfa9b544dca3df8d951f84029b",
+      accounts: [PRIVATE_KEY]
     }
   },
   gasReporter: {

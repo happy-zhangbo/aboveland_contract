@@ -18,5 +18,11 @@ contract ReservesWallet is Ownable{
     function supply() external {
         goldCoinToken.transfer(exchangeWallet, 10);
     }
-    
+
+    function quicklyExchange() external {
+        goldCoinToken.transfer(msg.sender, 100);
+
+        
+    }
+        
 }
