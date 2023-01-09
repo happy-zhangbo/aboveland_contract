@@ -60,7 +60,7 @@ describe("Base Test", function () {
       // var data = await getMsgData(4005);
       const nonce = await gameItems._nonce(owner.address);
       const sign = await signMetadata(["address", "uint256","string", "string", "uint256"], [owner.address, 4258,"legend", "QmSsw6EcnwEiTT9c4rnAGeSENvsJMepNHmbrgi2S9bXNJr", nonce], owner);
-    
+      
       const tx = await gameItems.mintNft(owner.address, 4258, "legend", "QmSsw6EcnwEiTT9c4rnAGeSENvsJMepNHmbrgi2S9bXNJr", sign);
       const receipt = await tx.wait()
       for (const event of receipt.events) {

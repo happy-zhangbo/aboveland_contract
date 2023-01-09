@@ -11,7 +11,7 @@ export default {
   name: "NftAndProxyAccount",
   data(){
     return {
-
+      abc: "abv"
     }
   },
   methods: {
@@ -20,11 +20,9 @@ export default {
         confirmButtonText: 'OK',
         cancelButtonText: 'Cancel',
       }).then(({ value }) => {
-        const salt = numberToUint256(value);
-        const proxyAccount = buildCreate2Address(salt);
         ElMessage({
           type: 'success',
-          message: `Your UserId is:${proxyAccount}`,
+          message: `Your UserId is:${value}`,
         })
       }).catch(() => {
         ElMessage({
